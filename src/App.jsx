@@ -1,40 +1,28 @@
-import { Routes, Route, useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
 import "./App.css";
 
-function Home() {
-  const navigate = useNavigate();
-
-  return (
-    <div className="page">
-      <div className="card">
-        <h1>Homepage</h1>
-        <p>
-          This is a simple React homepage. Click the button to go to the second
-          page.
-        </p>
-        <button onClick={() => navigate("/second")}>Go to Second Page</button>
-      </div>
-    </div>
-  );
-}
-
-function SecondPage() {
-  return (
-    <div className="page">
-      <div className="card">
-        <h1>Second Page</h1>
-        <p>You made it here via the redirect button.</p>
-        <Link to="/">Back to Home</Link>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
+  const [count, setCount] = useState(0);
+
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/second" element={<SecondPage />} />
-    </Routes>
+    <div className="app">
+      <div className="counter-card">
+        <p className="eyebrow">Simple demo</p>
+        <h1>Click counter</h1>
+        <p className="count" aria-live="polite">
+          {count} {count === 1 ? "click" : "clicks"}
+        </p>
+        <button type="button" onClick={() => setCount((value) => value + 1)}>
+          Click me
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          onClick={() => setCount(0)}
+        >
+          Reset
+        </button>
+      </div>
+    </div>
   );
 }
