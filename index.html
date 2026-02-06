@@ -3,64 +3,321 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple Demo</title>
+    <title>Text Collector</title>
     <style>
       :root {
         color-scheme: light;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
         line-height: 1.5;
         background: #f8fafc;
-        color: #0f172a;
+        color: #1f2937;
+        --ink: #1f2937;
+        --ink-soft: #4b5563;
+        --accent: #f97316;
+        --accent-strong: #ea580c;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --border: #e2e8f0;
+        --shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+        --radius: 18px;
       }
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top left, #fff7ed 0%, #f8fafc 42%),
+          radial-gradient(circle at 80% 20%, #d1fae5 0%, #f8fafc 40%), #f8fafc;
       }
       .page {
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 32px;
+        padding: 48px 24px;
+        position: relative;
+        overflow: hidden;
       }
-      .card {
-        width: min(520px, 100%);
-        background: white;
-        border-radius: 16px;
+      .page::before,
+      .page::after {
+        content: "";
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        opacity: 0.35;
+        filter: blur(2px);
+        z-index: 0;
+        animation: float 12s ease-in-out infinite;
+      }
+      .page::before {
+        top: -120px;
+        right: -80px;
+        background: radial-gradient(circle, rgba(249, 115, 22, 0.55), transparent 70%);
+      }
+      .page::after {
+        bottom: -140px;
+        left: -100px;
+        background: radial-gradient(circle, rgba(14, 116, 144, 0.45), transparent 70%);
+        animation-delay: 1.8s;
+      }
+      .app {
+        width: min(640px, 100%);
+        background: var(--surface);
+        border-radius: var(--radius);
         padding: 32px;
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
-        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 28px;
+        animation: liftIn 0.8s ease;
       }
       h1 {
-        margin: 0 0 8px;
-        font-size: 28px;
+        margin: 0 0 6px;
+        font-size: clamp(28px, 3vw, 36px);
+        font-family: "Bodoni 72", "Didot", "Times New Roman", serif;
+        letter-spacing: 0.02em;
       }
       p {
         margin: 0;
-        color: #475569;
+        color: var(--ink-soft);
       }
-      .badge {
+      .eyebrow {
         display: inline-block;
-        margin-bottom: 12px;
-        padding: 6px 12px;
+        margin-bottom: 10px;
+        padding: 6px 14px;
         border-radius: 999px;
-        background: #e2e8f0;
-        color: #0f172a;
-        font-size: 12px;
+        background: #fff1e6;
+        color: var(--accent-strong);
+        font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
+      }
+      .entry {
+        display: grid;
+        gap: 12px;
+      }
+      .entry__row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      input[type="text"] {
+        flex: 1 1 220px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 12px 18px;
+        font-size: 16px;
+        background: var(--surface-soft);
+        color: var(--ink);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      input[type="text"]:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
+      }
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 12px 22px;
+        background: var(--accent);
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        box-shadow: 0 12px 22px rgba(249, 115, 22, 0.2);
+      }
+      button:hover {
+        background: var(--accent-strong);
+        transform: translateY(-1px);
+      }
+      button:active {
+        transform: translateY(1px);
+      }
+      .helper {
+        font-size: 13px;
+        color: var(--ink-soft);
+      }
+      .list-panel {
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 20px;
+        background: #ffffff;
+        display: grid;
+        gap: 16px;
+      }
+      .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .list-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .count {
+        font-size: 13px;
+        color: var(--ink-soft);
+      }
+      .list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+      .list__item {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      .list__item--in {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .bubble {
+        display: block;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: #fff7ed;
+        color: var(--ink);
+        box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.16);
+      }
+      .empty {
+        margin: 0;
+        font-size: 14px;
+        color: var(--ink-soft);
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(16px);
+        }
+      }
+      @keyframes liftIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      @media (max-width: 600px) {
+        .app {
+          padding: 24px;
+        }
+        .list-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
       }
     </style>
   </head>
   <body>
     <main class="page">
-      <section class="card">
-        <span class="badge">Simple Demo</span>
-        <h1>Hello from your new page</h1>
-        <p>This is a clean, static HTML page with internal CSS.</p>
+      <section class="app">
+        <header>
+          <span class="eyebrow">Simple App</span>
+          <h1>Text Collector</h1>
+          <p>Add a line and see it appear instantly.</p>
+        </header>
+
+        <form class="entry" id="entry-form">
+          <label class="sr-only" for="text-input">Add text</label>
+          <div class="entry__row">
+            <input
+              id="text-input"
+              type="text"
+              name="text"
+              placeholder="Write something memorable..."
+              maxlength="140"
+              autocomplete="off"
+              required
+            />
+            <button type="submit">Add text</button>
+          </div>
+          <p class="helper">Tip: press Enter to add quickly. Max 140 characters.</p>
+        </form>
+
+        <section class="list-panel" aria-live="polite">
+          <div class="list-header">
+            <h2>Latest entries</h2>
+            <span class="count" id="count">0 items</span>
+          </div>
+          <ul class="list" id="list"></ul>
+          <p class="empty" id="empty-state">No entries yet. Add your first note above.</p>
+        </section>
       </section>
     </main>
+
+    <script>
+      const form = document.getElementById("entry-form");
+      const input = document.getElementById("text-input");
+      const list = document.getElementById("list");
+      const emptyState = document.getElementById("empty-state");
+      const count = document.getElementById("count");
+      let total = 0;
+
+      const updateCount = () => {
+        count.textContent = `${total} item${total === 1 ? "" : "s"}`;
+      };
+
+      const addItem = (text) => {
+        const li = document.createElement("li");
+        li.className = "list__item";
+        const bubble = document.createElement("span");
+        bubble.className = "bubble";
+        bubble.textContent = text;
+        li.appendChild(bubble);
+        list.prepend(li);
+        total += 1;
+        updateCount();
+        emptyState.hidden = true;
+
+        requestAnimationFrame(() => {
+          li.classList.add("list__item--in");
+        });
+      };
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) {
+          input.focus();
+          return;
+        }
+        addItem(text);
+        input.value = "";
+        input.focus();
+      });
+    </script>
   </body>
 </html>
